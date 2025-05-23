@@ -1,6 +1,6 @@
 package en.efraimg.lccccompat;
 
-import com.grebnev.lccccompat.peripheral.TerminalPeripheralProvider;
+import en.efraimg.lccccompat.peripheral.TerminalPeripheralProvider;
 import dan200.computercraft.api.peripheral.PeripheralLookup;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
@@ -22,7 +22,7 @@ public class LCCCCompat {
         public static void onCommonSetup(FMLCommonSetupEvent event) {
             PeripheralLookup.get().registerForBlockEntity(
                     com.lightmanscurrency.common.blockentity.TerminalBlockEntity.class,
-                    (level, pos, state, blockEntity, side) -> new com.grebnev.lccccompat.peripheral.TerminalPeripheral(blockEntity)
+                    (level, pos, state, blockEntity, side) -> new en.efraimg.lccccompat.peripheral.TerminalPeripheral(blockEntity) //TODO Find the terminal Block Entity in lightman's code once imported
             );
         }
     }
