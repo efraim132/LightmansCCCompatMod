@@ -6,6 +6,44 @@ plugins {
     id 'org.parchmentmc.librarian.forgegradle' version '1.+'
 }
 
+processResources {
+    inputs.properties([
+            mod_id: mod_id,
+            mod_name: mod_name,
+            mod_license: mod_license,
+            mod_version: mod_version,
+            mod_authors: mod_authors,
+            mod_description: mod_description,
+            minecraft_version: minecraft_version,
+            minecraft_version_range: minecraft_version_range,
+            forge_version: forge_version,
+            forge_version_range: forge_version_range,
+            loader_version_range: loader_version_range,
+            lightmanscurrency_range: lightmanscurrency_range,
+            cc_version: cc_version
+    ])
+
+    filesMatching("META-INF/mods.toml") {
+        expand([
+                mod_id: mod_id,
+                mod_name: mod_name,
+                mod_license: mod_license,
+                mod_version: mod_version,
+                mod_authors: mod_authors,
+                mod_description: mod_description,
+                minecraft_version: minecraft_version,
+                minecraft_version_range: minecraft_version_range,
+                forge_version: forge_version,
+                forge_version_range: forge_version_range,
+                loader_version_range: loader_version_range,
+                lightmanscurrency_range: lightmanscurrency_range,
+                cc_version: cc_version
+        ])
+    }
+}
+
+
+
 version = mod_version
 group = mod_group_id
 
@@ -160,7 +198,7 @@ dependencies {
     runtimeOnly(fg.deobf("cc.tweaked:cc-tweaked-1.20.1-forge:1.115.1"))
 
     //Lightman's Currency (obviously)
-    implementation fg.deobf("maven.modrinth:lightmans-currency:${lightmanscurrency_version}")
+    //implementation fg.deobf("maven.modrinth:lightmans-currency:${lightmanscurrency_version}")
 
     // For more info:
     // http://www.gradle.org/docs/current/userguide/artifact_dependencies_tutorial.html
