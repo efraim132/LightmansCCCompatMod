@@ -116,12 +116,19 @@ repositories {
     // Put repositories for dependencies here
     // ForgeGradle automatically adds the Forge maven and Maven Central for you
 
+    // CC Tweaked
+    maven {
+        url "https://maven.squiddev.cc"
+        content { includeGroup("cc.tweaked") }
+    }
+}
+
     // If you have mod jar dependencies in ./libs, you can declare them as a repository like so.
     // See https://docs.gradle.org/current/userguide/declaring_repositories.html#sub:flat_dir_resolver
     // flatDir {
     //     dir 'libs'
     // }
-}
+
 
 dependencies {
     // Specify the version of Minecraft to use.
@@ -141,6 +148,12 @@ dependencies {
     // This maps to ./libs/coolmod-${mc_version}-${coolmod_version}.jar
     // The group id is ignored when searching -- in this case, it is "blank"
     // implementation fg.deobf("blank:coolmod-${mc_version}:${coolmod_version}")
+
+
+    // CC Tweaked
+    compileOnly("cc.tweaked:cc-tweaked-1.20.1-core-api:1.115.1")
+    compileOnly(fg.deobf("cc.tweaked:cc-tweaked-1.20.1-forge-api:1.115.1"))
+    runtimeOnly(fg.deobf("cc.tweaked:cc-tweaked-1.20.1-forge:1.115.1"))
 
     // For more info:
     // http://www.gradle.org/docs/current/userguide/artifact_dependencies_tutorial.html
