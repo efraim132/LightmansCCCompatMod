@@ -1,7 +1,7 @@
 package en.efraimg.lccccompat;
 
 import dan200.computercraft.api.ComputerCraftAPI;
-import en.efraimg.lccccompat.peripheral.FurnacePeripheral;
+import en.efraimg.lccccompat.peripheral.TerminalPeripheral;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -21,7 +21,7 @@ public class LCCCCompat {
         @SubscribeEvent
         public static void onCommonSetup(FMLCommonSetupEvent event) {
             event.enqueueWork(() -> {
-                ComputerCraftAPI.registerGenericSource(new FurnacePeripheral());
+                ComputerCraftAPI.registerGenericSource(new TerminalPeripheral());
             });
         }
     }
