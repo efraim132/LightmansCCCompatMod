@@ -1,6 +1,9 @@
 package en.efraimg.lccccompat.peripheral;
 
-import com.google.gson.*;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import dan200.computercraft.api.lua.LuaFunction;
 import dan200.computercraft.api.peripheral.GenericPeripheral;
 import en.efraimg.lccccompat.LCCCCompat;
