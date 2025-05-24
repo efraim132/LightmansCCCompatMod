@@ -1,8 +1,6 @@
 package en.efraimg.lccccompat.peripheral;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
+import com.google.gson.*;
 import dan200.computercraft.api.lua.LuaFunction;
 import dan200.computercraft.api.peripheral.GenericPeripheral;
 import en.efraimg.lccccompat.LCCCCompat;
@@ -37,9 +35,9 @@ public class TerminalPeripheral implements GenericPeripheral {
         return trader.getRawTraderData().getIcon().toString();
     }
 
-    @LuaFunction(mainThread = true) //TODO actually setup the trader API to properly return the trader data
-    public String getTrades(ItemTraderBlockEntity trader) {
-        String allTrades = getAllTradersWithTradesAsJson(false);
+    @LuaFunction(mainThread = true)
+    public List<Map<String, Object>> getTrades(ItemTraderBlockEntity trader) {
+        List<Map<String, Object>> allTrades = convertJsonToTable(getAllTradersWithTradesAsJson(false));
         return allTrades;
     }
 
@@ -54,20 +52,20 @@ public class TerminalPeripheral implements GenericPeripheral {
 
             JsonArray tradesArray = new JsonArray();
             for (TradeData trade : trader.getTradeData()) {
-                JsonObject tradeObj = new JsonObject();
-                // Example for ItemTradeData, adjust for your trade types
                 if (trade instanceof ItemTradeData itemTrade) {
                     var item = itemTrade.getSellItem(0);
+                    if (item.isEmpty()) continue; // Skip Air items
+
+                    JsonObject tradeObj = new JsonObject();
                     tradeObj.addProperty("item", item.getHoverName().getString());
                     tradeObj.addProperty("count", item.getCount());
                     tradeObj.addProperty("price", itemTrade.getCost().getText().getString());
-               // } else if (trade instanceof FluidTradeData fluidTrade) {
-                    // TODO: Add in logic for fluid trades from addon
-                //}
+                    tradesArray.add(tradeObj);
                 } else {
+                    JsonObject tradeObj = new JsonObject();
                     tradeObj.addProperty("type", trade.getClass().getSimpleName());
+                    tradesArray.add(tradeObj);
                 }
-                tradesArray.add(tradeObj);
             }
             traderObj.add("trades", tradesArray);
             tradersArray.add(traderObj);
@@ -76,6 +74,42 @@ public class TerminalPeripheral implements GenericPeripheral {
         Gson gson = new Gson();
         return gson.toJson(tradersArray);
     }
+
+    private List<Map<String, Object>> convertJsonToTable(String json) {
+        List<Map<String, Object>> tradersList = new ArrayList<>();
+        JsonArray tradersArray = JsonParser.parseString(json).getAsJsonArray();
+
+        for (JsonElement traderElement : tradersArray) {
+            JsonObject traderObj = traderElement.getAsJsonObject();
+            Map<String, Object> traderMap = new HashMap<>();
+            traderMap.put("name", traderObj.get("name").getAsString());
+            traderMap.put("id", traderObj.get("id").getAsString());
+
+            List<Map<String, Object>> tradesList = new ArrayList<>();
+            JsonArray tradesArray = traderObj.getAsJsonArray("trades");
+
+            for (JsonElement tradeElement : tradesArray) {
+                JsonObject tradeObj = tradeElement.getAsJsonObject();
+                Map<String, Object> tradeMap = new HashMap<>();
+
+                if (tradeObj.has("item")) {
+                    tradeMap.put("item", tradeObj.get("item").getAsString());
+                    tradeMap.put("count", tradeObj.get("count").getAsInt());
+                    tradeMap.put("price", tradeObj.get("price").getAsString());
+                } else {
+                    tradeMap.put("type", tradeObj.get("type").getAsString());
+                }
+
+                tradesList.add(tradeMap);
+            }
+
+            traderMap.put("trades", tradesList);
+            tradersList.add(traderMap);
+        }
+
+        return tradersList;
+    }
+
 
 
 }
