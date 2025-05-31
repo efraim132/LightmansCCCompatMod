@@ -1,9 +1,6 @@
 package en.efraimg.lccccompat.peripheral;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import com.google.gson.*;
 import dan200.computercraft.api.lua.LuaFunction;
 import dan200.computercraft.api.peripheral.GenericPeripheral;
 import en.efraimg.lccccompat.LCCCCompat;
@@ -12,6 +9,7 @@ import io.github.lightman314.lightmanscurrency.api.traders.TraderData;
 import io.github.lightman314.lightmanscurrency.api.traders.trade.TradeData;
 import io.github.lightman314.lightmanscurrency.common.blockentity.trader.ItemTraderBlockEntity;
 import io.github.lightman314.lightmanscurrency.common.traders.item.tradedata.ItemTradeData;
+import dan200.computercraft.api.lua.LuaException;
 import net.minecraft.network.chat.MutableComponent;
 
 import java.util.*;
@@ -24,19 +22,26 @@ public class TerminalPeripheral implements GenericPeripheral {
     }
 
     @LuaFunction(mainThread = true)
-    public String getName(ItemTraderBlockEntity trader) {
-        return trader.getTraderData().getCustomName();
+    public String getName(ItemTraderBlockEntity trader) throws LuaException {
+        try {
+            return trader.getTraderData().getCustomName();
+        }catch (Exception e) {
+            LCCCCompat.LOGGER.error("Error getting trader name: " + e.getMessage());
+            throw new LuaException("Not a trader, cannot get name", 1);
+        }
     }
 
     @LuaFunction(mainThread = true)
-    public String getOwnerName(ItemTraderBlockEntity trader) {
-        return trader.getTraderData().getOwner().getName().toString();
+    public String getOwnerName(ItemTraderBlockEntity trader) throws LuaException {
+        try{
+            return trader.getTraderData().getOwner().getName().getString();
+        }catch (Exception e) {
+            LCCCCompat.LOGGER.error("Error getting trader owner name: " + e.getMessage());
+            throw new LuaException("Not a trader, cannot get name", 1);
+        }
+
     }
 
-    @LuaFunction(mainThread = true)
-    public String getIcon(ItemTraderBlockEntity trader) {
-        return trader.getRawTraderData().getIcon().toString();
-    }
 
     @LuaFunction(mainThread = true)
     public List<Map<String, Object>> getTrades(ItemTraderBlockEntity trader) {
@@ -56,17 +61,49 @@ public class TerminalPeripheral implements GenericPeripheral {
             JsonArray tradesArray = new JsonArray();
             for (TradeData trade : trader.getTradeData()) {
                 if (trade instanceof ItemTradeData itemTrade) {
-                    var item = itemTrade.getSellItem(0);
-                    if (item.isEmpty()) continue; // Skip Air items
+                    JsonArray itemsArray = new JsonArray();
+                    // Support up to 2 items (as per mod capability)
+                    for (int i = 0; i < 2; i++) {
+                        var item = itemTrade.getSellItem(i);
+                        if (item.isEmpty()) continue; // Skip Air items
+                        JsonObject itemObj = new JsonObject();
+                        itemObj.addProperty("item", item.getHoverName().getString());
+                        itemObj.addProperty("count", item.getCount());
+                        itemsArray.add(itemObj);
+                    }
+                    if (itemsArray.size() == 0) continue; // Skip trades with no items
 
                     JsonObject tradeObj = new JsonObject();
-                    tradeObj.addProperty("item", item.getHoverName().getString());
-                    tradeObj.addProperty("count", item.getCount());
-                    tradeObj.addProperty("price", itemTrade.getCost().getText().getString());
+                    tradeObj.add("items", itemsArray);
+
+                    // Add transaction type and cost
+                    String transactionType = "barter";
+                    if(itemTrade.isSale()) {
+                        transactionType = "sale";
+                        tradeObj.addProperty("price", itemTrade.getCost().getText().getString());
+                    } else if(itemTrade.isPurchase()) {
+                        transactionType = "purchase";
+                        tradeObj.addProperty("price", itemTrade.getCost().getText().getString());
+                    } else if (itemTrade.isBarter()) {
+                        transactionType = "barter";
+                        // Add itemsCost array for barter (2 item slots)
+                        JsonArray itemsCostArray = new JsonArray();
+                        for (int i = 0; i < 2; i++) {
+                            var costItem = itemTrade.getBarterItem(i);
+                            if (costItem.isEmpty()) continue;
+                            JsonObject costObj = new JsonObject();
+                            costObj.addProperty("item", costItem.getHoverName().getString());
+                            costObj.addProperty("count", costItem.getCount());
+                            itemsCostArray.add(costObj);
+                        }
+                        tradeObj.add("itemsCost", itemsCostArray);
+                    }
+                    tradeObj.addProperty("transactionType", transactionType);
                     tradesArray.add(tradeObj);
                 } else {
                     JsonObject tradeObj = new JsonObject();
                     tradeObj.addProperty("type", trade.getClass().getSimpleName());
+                    tradeObj.addProperty("transactionType", "unknown");
                     tradesArray.add(tradeObj);
                 }
             }
@@ -95,14 +132,37 @@ public class TerminalPeripheral implements GenericPeripheral {
                 JsonObject tradeObj = tradeElement.getAsJsonObject();
                 Map<String, Object> tradeMap = new HashMap<>();
 
-                if (tradeObj.has("item")) {
-                    tradeMap.put("item", tradeObj.get("item").getAsString());
-                    tradeMap.put("count", tradeObj.get("count").getAsInt());
-                    tradeMap.put("price", tradeObj.get("price").getAsString());
+                if (tradeObj.has("items")) {
+                    List<Map<String, Object>> itemsList = new ArrayList<>();
+                    JsonArray itemsArray = tradeObj.getAsJsonArray("items");
+                    for (JsonElement itemElement : itemsArray) {
+                        JsonObject itemObj = itemElement.getAsJsonObject();
+                        Map<String, Object> itemMap = new HashMap<>();
+                        itemMap.put("item", itemObj.get("item").getAsString());
+                        itemMap.put("count", itemObj.get("count").getAsInt());
+                        itemsList.add(itemMap);
+                    }
+                    tradeMap.put("items", itemsList);
+                    if (tradeObj.has("price")) {
+                        tradeMap.put("price", tradeObj.get("price").getAsString());
+                    }
+                    if (tradeObj.has("itemsCost")) {
+                        List<Map<String, Object>> itemsCostList = new ArrayList<>();
+                        JsonArray itemsCostArray = tradeObj.getAsJsonArray("itemsCost");
+                        for (JsonElement costElement : itemsCostArray) {
+                            JsonObject costObj = costElement.getAsJsonObject();
+                            Map<String, Object> costMap = new HashMap<>();
+                            costMap.put("item", costObj.get("item").getAsString());
+                            costMap.put("count", costObj.get("count").getAsInt());
+                            itemsCostList.add(costMap);
+                        }
+                        tradeMap.put("itemsCost", itemsCostList);
+                    }
                 } else {
                     tradeMap.put("type", tradeObj.get("type").getAsString());
                 }
 
+                tradeMap.put("transactionType", tradeObj.get("transactionType").getAsString());
                 tradesList.add(tradeMap);
             }
 
@@ -112,7 +172,4 @@ public class TerminalPeripheral implements GenericPeripheral {
 
         return tradersList;
     }
-
-
-
 }
