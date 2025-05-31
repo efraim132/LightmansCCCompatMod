@@ -56,8 +56,7 @@ Attach the terminal peripheral to your ComputerCraft computer. You can then call
 
 - `getName(trader)`: Returns the custom name of the trader.
 - `getOwnerName(trader)`: Returns the name of the trader's owner.
-- `getIcon(trader)`: Returns the icon of the trader.
-- `getTrades(trader)`: Returns a table of all trades for the trader. Each trade includes:
+- `getTrades()`: Returns a table of all trades for the trader. Each trade includes:
   - `items`: List of items being sold or offered (each with `item` and `count`).
   - `transactionType`: One of `sale`, `purchase`, or `barter`.
   - `price`: (For sales/purchases) The price in currency.
@@ -66,21 +65,37 @@ Attach the terminal peripheral to your ComputerCraft computer. You can then call
 #### Example Lua Usage
 
 ```lua
-local peripheral = ... -- Attach or wrap the terminal peripheral
-local trades = peripheral.getTrades(trader)
-for i, trade in ipairs(trades) do
-  print(trade.transactionType)
-  for _, item in ipairs(trade.items) do
-    print(item.item .. " x" .. item.count)
-  end
-  if trade.transactionType == "barter" then
-    for _, cost in ipairs(trade.itemsCost) do
-      print("Requires: " .. cost.item .. " x" .. cost.count)
+local p = peripheral.wrap("back") -- change to your peripheral side
+local traders = p.getTrades()
+
+for _, trader in ipairs(traders) do
+    print("Trader:", trader.name, "(ID:", trader.id .. ")")
+    if #trader.trades == 0 then
+        print("  No trades available.")
+    else
+        for i, trade in ipairs(trader.trades) do
+            print("  Trade " .. i .. ":")
+            print("    Type:", trade.transactionType)
+            if trade.price then
+                print("    Price:", trade.price)
+            end
+            if trade.items then
+                print("    Items:")
+                for _, item in ipairs(trade.items) do
+                    print("      -", item.count, item.item)
+                end
+            end
+            if trade.itemsCost then
+                print("    Cost Items:")
+                for _, item in ipairs(trade.itemsCost) do
+                    print("      -", item.count, item.item)
+                end
+            end
+        end
     end
-  elseif trade.price then
-    print("Price: " .. trade.price)
-  end
+    print()
 end
+
 ```
 
 See the mod source for more details on available fields and usage.
@@ -95,6 +110,8 @@ The Terminal Peripheral can be attached to the following blocks from Lightman's 
 - **Any other block that implements the Lightman's Currency trader interface**
 
 To use the peripheral, simply place your ComputerCraft computer adjacent to one of these blocks, or use a wired modem to connect. The peripheral will automatically expose the trader's data to your Lua scripts.
+
+When not placed next to a network trader, the peripheral will throw an error when trying to access the owner and name of the trader.
 
 ## License
 

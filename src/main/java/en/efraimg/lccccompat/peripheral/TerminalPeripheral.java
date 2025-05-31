@@ -37,7 +37,7 @@ public class TerminalPeripheral implements GenericPeripheral {
             return trader.getTraderData().getOwner().getName().getString();
         }catch (Exception e) {
             LCCCCompat.LOGGER.error("Error getting trader owner name: " + e.getMessage());
-            throw new LuaException("Not a trader, cannot get name", 1);
+            throw new LuaException("Not a trader, cannot get name of owner", 1);
         }
 
     }
