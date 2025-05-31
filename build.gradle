@@ -4,7 +4,48 @@ plugins {
     id 'maven-publish'
     id 'net.minecraftforge.gradle' version '[6.0,6.2)'
     id 'org.parchmentmc.librarian.forgegradle' version '1.+'
+    id 'org.spongepowered.mixin' version '0.7.+'
 }
+
+
+
+processResources {
+    inputs.properties([
+            mod_id: mod_id,
+            mod_name: mod_name,
+            mod_license: mod_license,
+            mod_version: mod_version,
+            mod_authors: mod_authors,
+            mod_description: mod_description,
+            minecraft_version: minecraft_version,
+            minecraft_version_range: minecraft_version_range,
+            forge_version: forge_version,
+            forge_version_range: forge_version_range,
+            loader_version_range: loader_version_range,
+            lightmanscurrency_range: lightmanscurrency_range,
+            cc_version: cc_version
+    ])
+
+    filesMatching("META-INF/mods.toml") {
+        expand([
+                mod_id: mod_id,
+                mod_name: mod_name,
+                mod_license: mod_license,
+                mod_version: mod_version,
+                mod_authors: mod_authors,
+                mod_description: mod_description,
+                minecraft_version: minecraft_version,
+                minecraft_version_range: minecraft_version_range,
+                forge_version: forge_version,
+                forge_version_range: forge_version_range,
+                loader_version_range: loader_version_range,
+                lightmanscurrency_range: lightmanscurrency_range,
+                cc_version: cc_version
+        ])
+    }
+}
+
+
 
 version = mod_version
 group = mod_group_id
@@ -116,12 +157,26 @@ repositories {
     // Put repositories for dependencies here
     // ForgeGradle automatically adds the Forge maven and Maven Central for you
 
+    // CC Tweaked
+    maven {
+        url "https://maven.squiddev.cc"
+        content { includeGroup("cc.tweaked") }
+    }
+    maven {
+        name = "Modrinth"
+        url = "https://api.modrinth.com/maven"
+    }
+    maven { url = "https://maven.minecraftforge.net/" }
+    mavenCentral()
+}
+
+
     // If you have mod jar dependencies in ./libs, you can declare them as a repository like so.
     // See https://docs.gradle.org/current/userguide/declaring_repositories.html#sub:flat_dir_resolver
     // flatDir {
     //     dir 'libs'
     // }
-}
+
 
 dependencies {
     // Specify the version of Minecraft to use.
@@ -141,6 +196,16 @@ dependencies {
     // This maps to ./libs/coolmod-${mc_version}-${coolmod_version}.jar
     // The group id is ignored when searching -- in this case, it is "blank"
     // implementation fg.deobf("blank:coolmod-${mc_version}:${coolmod_version}")
+
+    //
+    annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
+    // CC Tweaked
+    compileOnly("cc.tweaked:cc-tweaked-1.20.1-core-api:1.115.1")
+    compileOnly(fg.deobf("cc.tweaked:cc-tweaked-1.20.1-forge-api:1.115.1"))
+    runtimeOnly(fg.deobf("cc.tweaked:cc-tweaked-1.20.1-forge:1.115.1"))
+
+    //Lightman's Currency (obviously)
+    implementation fg.deobf("maven.modrinth:lightmans-currency:${lightmanscurrency_version}")
 
     // For more info:
     // http://www.gradle.org/docs/current/userguide/artifact_dependencies_tutorial.html
