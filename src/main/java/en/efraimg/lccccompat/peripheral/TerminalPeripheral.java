@@ -10,7 +10,6 @@ import io.github.lightman314.lightmanscurrency.api.traders.trade.TradeData;
 import io.github.lightman314.lightmanscurrency.common.blockentity.trader.ItemTraderBlockEntity;
 import io.github.lightman314.lightmanscurrency.common.traders.item.tradedata.ItemTradeData;
 import dan200.computercraft.api.lua.LuaException;
-import net.minecraft.network.chat.MutableComponent;
 
 import java.util.*;
 
@@ -24,9 +23,9 @@ public class TerminalPeripheral implements GenericPeripheral {
     @LuaFunction(mainThread = true)
     public String getName(ItemTraderBlockEntity trader) throws LuaException {
         try {
-            return trader.getTraderData().getCustomName();
+            return trader.getTraderData().getName().getString();
         }catch (Exception e) {
-            LCCCCompat.LOGGER.error("Error getting trader name: " + e.getMessage());
+            LCCCCompat.LOGGER.error("Error getting trader name: {}", e.getMessage());
             throw new LuaException("Not a trader, cannot get name", 1);
         }
     }
@@ -36,7 +35,7 @@ public class TerminalPeripheral implements GenericPeripheral {
         try{
             return trader.getTraderData().getOwner().getName().getString();
         }catch (Exception e) {
-            LCCCCompat.LOGGER.error("Error getting trader owner name: " + e.getMessage());
+            LCCCCompat.LOGGER.error("Error getting trader owner name: {}", e.getMessage());
             throw new LuaException("Not a trader, cannot get name of owner", 1);
         }
 
@@ -45,12 +44,11 @@ public class TerminalPeripheral implements GenericPeripheral {
 
     @LuaFunction(mainThread = true)
     public List<Map<String, Object>> getTrades(ItemTraderBlockEntity trader) {
-        List<Map<String, Object>> allTrades = convertJsonToTable(getAllTradersWithTradesAsJson(false));
-        return allTrades;
+        return convertJsonToTable(getAllTradersWithTradesAsJson());
     }
 
-    private String getAllTradersWithTradesAsJson(boolean isClient) {
-        List<TraderData> traders = TraderAPI.API.GetAllTraders(isClient);
+    private String getAllTradersWithTradesAsJson() {
+        List<TraderData> traders = TraderAPI.API.GetAllTraders(false);
         JsonArray tradersArray = new JsonArray();
 
         for (TraderData trader : traders) {
@@ -71,7 +69,7 @@ public class TerminalPeripheral implements GenericPeripheral {
                         itemObj.addProperty("count", item.getCount());
                         itemsArray.add(itemObj);
                     }
-                    if (itemsArray.size() == 0) continue; // Skip trades with no items
+                    if (itemsArray.isEmpty()) continue; // Skip trades with no items
 
                     JsonObject tradeObj = new JsonObject();
                     tradeObj.add("items", itemsArray);
@@ -135,13 +133,7 @@ public class TerminalPeripheral implements GenericPeripheral {
                 if (tradeObj.has("items")) {
                     List<Map<String, Object>> itemsList = new ArrayList<>();
                     JsonArray itemsArray = tradeObj.getAsJsonArray("items");
-                    for (JsonElement itemElement : itemsArray) {
-                        JsonObject itemObj = itemElement.getAsJsonObject();
-                        Map<String, Object> itemMap = new HashMap<>();
-                        itemMap.put("item", itemObj.get("item").getAsString());
-                        itemMap.put("count", itemObj.get("count").getAsInt());
-                        itemsList.add(itemMap);
-                    }
+                    mapItems(itemsList, itemsArray);
                     tradeMap.put("items", itemsList);
                     if (tradeObj.has("price")) {
                         tradeMap.put("price", tradeObj.get("price").getAsString());
@@ -149,13 +141,7 @@ public class TerminalPeripheral implements GenericPeripheral {
                     if (tradeObj.has("itemsCost")) {
                         List<Map<String, Object>> itemsCostList = new ArrayList<>();
                         JsonArray itemsCostArray = tradeObj.getAsJsonArray("itemsCost");
-                        for (JsonElement costElement : itemsCostArray) {
-                            JsonObject costObj = costElement.getAsJsonObject();
-                            Map<String, Object> costMap = new HashMap<>();
-                            costMap.put("item", costObj.get("item").getAsString());
-                            costMap.put("count", costObj.get("count").getAsInt());
-                            itemsCostList.add(costMap);
-                        }
+                        mapItems(itemsCostList, itemsCostArray);
                         tradeMap.put("itemsCost", itemsCostList);
                     }
                 } else {
@@ -171,5 +157,15 @@ public class TerminalPeripheral implements GenericPeripheral {
         }
 
         return tradersList;
+    }
+
+    private void mapItems(List<Map<String, Object>> itemsList, JsonArray itemsArray) {
+        for (JsonElement itemElement : itemsArray) {
+            JsonObject itemObj = itemElement.getAsJsonObject();
+            Map<String, Object> itemMap = new HashMap<>();
+            itemMap.put("item", itemObj.get("item").getAsString());
+            itemMap.put("count", itemObj.get("count").getAsInt());
+            itemsList.add(itemMap);
+        }
     }
 }
