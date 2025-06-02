@@ -22,7 +22,8 @@ public class ModBlocks {
 
     // Register the Card Scanner Block
     public static final RegistryObject<Block> CARD_SCANNER_BLOCK = registerBlock("card_scanner",
-            () -> new Block(BlockBehaviour.Properties.copy(Blocks.OAK_PLANKS).sound(SoundType.WOOD)));;
+            () -> new CardScannerBlock(BlockBehaviour.Properties.copy(Blocks.BASALT).sound(SoundType.WOOD)));
+
 
 
     // Register the Blocks Helper Method
