@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "": {
+      "model": "lccccompat:block/card_scanner_3d",
+      "transform": {
+        "translation": [0, 0.01, 0]
+      }
+    }
+  }
+}

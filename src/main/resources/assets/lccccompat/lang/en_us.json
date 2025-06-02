@@ -1,3 +1,4 @@
 {
-  "item.lccccompat.card_scanner": "Card Scanner"
+  "item.lccccompat.card_scanner": "Card Scanner",
+  "tooltip.lccccompat.card_scanner.tooltip": "Allows Player to Scan Card to register to a peripheral."
 }

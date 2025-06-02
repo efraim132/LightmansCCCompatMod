@@ -13,13 +13,26 @@ import dan200.computercraft.api.lua.LuaException;
 
 import java.util.*;
 
-
+/**
+ * TerminalPeripheral provides ComputerCraft integration for Lightman's Currency mod traders.
+ * It exposes methods to retrieve trader information and trades for use in Lua scripts.
+ */
 public class TerminalPeripheral implements GenericPeripheral {
+    /**
+     * Returns the unique peripheral ID for ComputerCraft registration.
+     * @return The peripheral ID string.
+     */
     @Override
     public String id() {
         return LCCCCompat.MODID + ":terminal";
     }
 
+    /**
+     * Gets the display name of the given ItemTraderBlockEntity.
+     * @param trader The trader block entity.
+     * @return The trader's name as a String.
+     * @throws LuaException If the entity is not a trader or name cannot be retrieved.
+     */
     @LuaFunction(mainThread = true)
     public String getName(ItemTraderBlockEntity trader) throws LuaException {
         try {
@@ -30,6 +43,12 @@ public class TerminalPeripheral implements GenericPeripheral {
         }
     }
 
+    /**
+     * Gets the display name of the owner of the given ItemTraderBlockEntity.
+     * @param trader The trader block entity.
+     * @return The owner's name as a String.
+     * @throws LuaException If the entity is not a trader or owner name cannot be retrieved.
+     */
     @LuaFunction(mainThread = true)
     public String getOwnerName(ItemTraderBlockEntity trader) throws LuaException {
         try{
@@ -41,12 +60,20 @@ public class TerminalPeripheral implements GenericPeripheral {
 
     }
 
-
+    /**
+     * Retrieves a list of all traders and their trades, formatted for Lua consumption.
+     * @param trader The trader block entity (not used in this implementation).
+     * @return A list of maps representing traders and their trades.
+     */
     @LuaFunction(mainThread = true)
     public List<Map<String, Object>> getTrades(ItemTraderBlockEntity trader) {
         return convertJsonToTable(getAllTradersWithTradesAsJson());
     }
 
+    /**
+     * Gathers all traders and their trades as a JSON string.
+     * @return JSON string representing all traders and their trades.
+     */
     private String getAllTradersWithTradesAsJson() {
         List<TraderData> traders = TraderAPI.API.GetAllTraders(false);
         JsonArray tradersArray = new JsonArray();
@@ -113,6 +140,11 @@ public class TerminalPeripheral implements GenericPeripheral {
         return gson.toJson(tradersArray);
     }
 
+    /**
+     * Converts a JSON string of traders and trades into a list of maps for Lua.
+     * @param json The JSON string to convert.
+     * @return A list of maps representing traders and their trades.
+     */
     private List<Map<String, Object>> convertJsonToTable(String json) {
         List<Map<String, Object>> tradersList = new ArrayList<>();
         JsonArray tradersArray = JsonParser.parseString(json).getAsJsonArray();
@@ -159,6 +191,11 @@ public class TerminalPeripheral implements GenericPeripheral {
         return tradersList;
     }
 
+    /**
+     * Helper method to map item JSON arrays to Java lists for Lua.
+     * @param itemsList The list to populate.
+     * @param itemsArray The JSON array of items.
+     */
     private void mapItems(List<Map<String, Object>> itemsList, JsonArray itemsArray) {
         for (JsonElement itemElement : itemsArray) {
             JsonObject itemObj = itemElement.getAsJsonObject();
