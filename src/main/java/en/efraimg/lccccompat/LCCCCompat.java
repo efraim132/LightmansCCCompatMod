@@ -2,17 +2,12 @@ package en.efraimg.lccccompat;
 
 import com.mojang.logging.LogUtils;
 import dan200.computercraft.api.ComputerCraftAPI;
+import en.efraimg.lccccompat.peripheral.CardScannerPeripheral;
 import en.efraimg.lccccompat.peripheral.TerminalPeripheral;
 import en.efraimg.lccccompat.peripheral.blocks.ModBlocks;
-import en.efraimg.lccccompat.peripheral.items.ModCreativeModTab;
-import net.minecraft.network.chat.Component;
-import net.minecraft.world.item.CreativeModeTabs;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.level.Level;
+import en.efraimg.lccccompat.peripheral.entity.ModBlockEntities;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
-import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
@@ -22,9 +17,6 @@ import net.minecraftforge.fml.common.Mod.EventBusSubscriber.Bus;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import en.efraimg.lccccompat.peripheral.items.ModItems;
 import org.slf4j.Logger;
-
-import javax.annotation.Nullable;
-import java.util.List;
 
 /**
  * Main mod class for Lightman's Currency ComputerCraft Compatibility Mod.
@@ -58,6 +50,9 @@ public class LCCCCompat {
 
         // Register Blocks
         ModBlocks.register(modEventBus);
+
+        // Register Block Entities (part of blocks)
+        ModBlockEntities.register(modEventBus);
 
         modEventBus.addListener(this::commonSetup);
         
@@ -97,6 +92,7 @@ public class LCCCCompat {
         public static void onCommonSetup(FMLCommonSetupEvent event) {
             event.enqueueWork(() -> {
                 ComputerCraftAPI.registerGenericSource(new TerminalPeripheral());
+                ComputerCraftAPI.registerGenericSource(new CardScannerPeripheral());
             });
         }
     }

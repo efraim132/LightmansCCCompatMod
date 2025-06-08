@@ -1,4 +1,5 @@
 package en.efraimg.lccccompat.peripheral.blocks;
+import en.efraimg.lccccompat.peripheral.entity.CardScannerBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.BaseEntityBlock;
@@ -81,7 +82,7 @@ public class CardScannerBlock extends BaseEntityBlock {
 
 
     @Override
-    public @Nullable BlockEntity newBlockEntity(BlockPos blockPos, BlockState blockState) {
-        return null;
+    public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
+        return new CardScannerBlockEntity(pos, state);
     }
 }

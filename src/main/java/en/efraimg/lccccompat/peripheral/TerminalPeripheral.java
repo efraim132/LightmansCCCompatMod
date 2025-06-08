@@ -70,11 +70,12 @@ public class TerminalPeripheral implements GenericPeripheral {
         return convertJsonToTable(getAllTradersWithTradesAsJson());
     }
 
+
     /**
      * Gathers all traders and their trades as a JSON string.
      * @return JSON string representing all traders and their trades.
      */
-    private String getAllTradersWithTradesAsJson() {
+    public String getAllTradersWithTradesAsJson() {
         List<TraderData> traders = TraderAPI.API.GetAllTraders(false);
         JsonArray tradersArray = new JsonArray();
 
@@ -145,7 +146,7 @@ public class TerminalPeripheral implements GenericPeripheral {
      * @param json The JSON string to convert.
      * @return A list of maps representing traders and their trades.
      */
-    private List<Map<String, Object>> convertJsonToTable(String json) {
+    public List<Map<String, Object>> convertJsonToTable(String json) {
         List<Map<String, Object>> tradersList = new ArrayList<>();
         JsonArray tradersArray = JsonParser.parseString(json).getAsJsonArray();
 
@@ -196,7 +197,7 @@ public class TerminalPeripheral implements GenericPeripheral {
      * @param itemsList The list to populate.
      * @param itemsArray The JSON array of items.
      */
-    private void mapItems(List<Map<String, Object>> itemsList, JsonArray itemsArray) {
+    public void mapItems(List<Map<String, Object>> itemsList, JsonArray itemsArray) {
         for (JsonElement itemElement : itemsArray) {
             JsonObject itemObj = itemElement.getAsJsonObject();
             Map<String, Object> itemMap = new HashMap<>();
