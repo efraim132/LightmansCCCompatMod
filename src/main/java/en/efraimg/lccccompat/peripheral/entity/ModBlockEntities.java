@@ -14,7 +14,7 @@ public class ModBlockEntities {
             DeferredRegister.create(ForgeRegistries.BLOCK_ENTITY_TYPES, LCCCCompat.MODID);
 
     public static final RegistryObject<BlockEntityType<CardScannerBlockEntity>> CARD_SCANNER_BLOCK_ENTITY =
-            BLOCK_ENTITIES.register("card_scanner",
+            BLOCK_ENTITIES.register("card_scanner_entity",
                     () -> {
                         return BlockEntityType.Builder.of(CardScannerBlockEntity::new,
                                 ModBlocks.CARD_SCANNER_BLOCK.get()).build(null);
