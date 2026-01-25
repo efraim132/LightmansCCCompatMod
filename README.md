@@ -113,6 +113,10 @@ To use the peripheral, simply place your ComputerCraft computer adjacent to one 
 
 When not placed next to a network trader, the peripheral will throw an error when trying to access the owner and name of the trader.
 
+## Mod Links
+[CurseForge](https://www.curseforge.com/minecraft/mc-mods/lc-cc-compat)
+[Modrinth](https://modrinth.com/mod/lc-cc-compat)
+
 ## License
 
 MIT License
